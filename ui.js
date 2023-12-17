@@ -13,6 +13,63 @@ Array.from(emotionSelector).map((ele) => {
   ele.innerHTML = emotionActionBtns;
 });
 
+
+const handleWrite = (x, y) => {
+    let payload = {
+        coordinate: `${x},${y}`,
+        emotion: {
+            creator: 0,
+            happy: 0,
+            sad: 0,
+            cry: 0,
+            angry: 0,
+            nostalgia: 0
+        }
+    }
+
+    const emotionReact = document.getElementsByClassName("color_con");
+
+    const setActiveReactCta = (actionType, actionId) => {
+        Array.from(emotionReact).map((ele) => {
+        if (
+            ele.getAttribute("emotion-action-type") == actionType && ele.getAttribute("emotion-action-id") == actionId) {
+            ele.classList.add("active");
+            payload.emotion.creator = parseInt(actionId)
+        } else {
+            ele.classList.remove("active");
+        }
+        });
+    };
+
+    return {
+        flush: () => {
+            Array.from(emotionReact).map((ele) => ele.classList.remove("active"));
+        },
+        init: () => {            
+            Array.from(emotionReact).map((ele) => {
+                ele.addEventListener("click", () => setActiveReactCta(ele.getAttribute("emotion-action-type"), ele.getAttribute("emotion-action-id")));
+            });
+        
+            document.getElementById('id_write_text_area').addEventListener('input', (event) => {
+                payload['body'] = event.target.value
+            })
+        
+            document.getElementById('id_post_story').addEventListener('click', () => {
+                createPost(payload)
+            })
+        }
+    }
+}
+
+const handleRead = (id, body) => {
+    return {
+        init: () => {            
+            document.getElementById('id_read_text_area').innerText = body
+        }
+    }
+}
+
+
 async function fetchPosts() {
   try {
     const response = await fetch(URLS.GET_POSTS, {
@@ -51,7 +108,7 @@ const drawGrids = async () => {
 
     if (_post) {
       let color = "";
-      const reactions = JSON.parse(JSON.stringify(_post.emotion));
+      const reactions = JSON.parse(_post.emotion);
       const highestReaction = findGreatestValueKey(reactions);
       if (highestReaction == "creator") {
         Object.keys(EMOTION_COLOR_CODES).map((key) => {
@@ -63,6 +120,7 @@ const drawGrids = async () => {
         color = EMOTION_COLOR_CODES[highestReaction].code;
       }
       return {
+        id: _post.id,
         x: parseInt(_post.coordinate.split(",")[0]),
         y: parseInt(_post.coordinate.split(",")[1]),
         body: _post.body,
@@ -77,11 +135,11 @@ const drawGrids = async () => {
 
 drawGrids();
 
-async function createPost() {
+async function createPost(payload) {
   const postData = new URLSearchParams({
-    body: "adasdaii",
-    emotion: "{}",
-    coordinate: "ss",
+    body: payload.body,
+    emotion: JSON.stringify(payload.emotion),
+    coordinate: payload.coordinate,
   });
 
   try {

@@ -191,8 +191,17 @@ const cellClickAnim = (height, width, left, top) => {
   ___canClickOnCell___ = false;
   const pressEle = document.getElementById("id_press_cell_ele");
   const pressEleAll = document.getElementsByClassName("press_cell");
-  // const writeAreaEle = writeAreaVisibility(left, top);
-  const writeAreaEle = readAreaVisibility(left, top);
+  const post = coordinates.find(_ => _.x == currentCoordiante.x && _.y == currentCoordiante.y)
+  let _postBox = null
+  let _postAction = null
+  if(post.body){
+    _postBox = readAreaVisibility(left, top);
+    _postAction = handleRead(post.id, post.body)
+  }else {
+    _postBox = writeAreaVisibility(left, top);
+    _postAction = handleWrite(currentCoordiante.x, currentCoordiante.y)
+    _postAction?.flush()
+  }
 
 
   const growCell = () => {
@@ -201,8 +210,9 @@ const cellClickAnim = (height, width, left, top) => {
     pressEle.style.left = left + "px";
     pressEle.style.top = top + "px";
     pressEle.classList.add("press_cell");
+    _postAction?.init()
     setTimeout(() => {
-      writeAreaEle.show();
+      _postBox.show();
     }, 1000);
   };
 
@@ -210,7 +220,7 @@ const cellClickAnim = (height, width, left, top) => {
     Array.from(pressEleAll).map((ele) => {
       ele.classList.remove("press_cell");
       ele.classList.add("close_cell");
-      writeAreaEle.hide();
+      _postBox.hide();
       setTimeout(() => {
         ___canClickOnCell___ = true;
         ele.classList.remove("close_cell");

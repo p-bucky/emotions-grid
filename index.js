@@ -16,7 +16,6 @@ for (let x = 0; x <= 10; x++) {
     coordinates.push({
       x: x,
       y: y,
-      // color: "#EF6C00CC",
     });
   }
 }
@@ -43,7 +42,7 @@ function draw() {
       CELL_WIDTH,
       CELL_HEIGHT
     );
-    ctx.fillStyle = coordinate.color;
+    ctx.fillStyle = coordinate?.color ? coordinate?.color : "#000";
     ctx.fillRect(
       coordinate.x * CELL_WIDTH,
       coordinate.y * CELL_HEIGHT,

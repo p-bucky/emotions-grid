@@ -1,0 +1,27 @@
+version: '3.9'
+
+networks:
+  default:
+    name: matilda-net
+    external: false
+  
+services:
+  postgres:
+    image: postgres:14.5
+    profiles: ["prepare", "deploy"]
+    container_name: ${CONTAINER_PREFIX}-postgres
+    hostname: db.postgres.local
+    environment:
+      - "POSTGRES_USER=${POSTGRES_USER}"
+      - "POSTGRES_PASSWORD=${POSTGRES_PASS}"
+      - "POSTGRES_DB=${POSTGRES_DB}"
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+    ports:
+      - 5432:5432
+    networks:
+      - default
+    volumes:
+      - ../.local/postgres/data:/var/lib/postgresql/data/

@@ -41,7 +41,8 @@ const googleOauthCallback = async (req, res) => {
     await userService.createUser(userInfo.sub, userInfo.given_name, userInfo.family_name)
     req.session.isLoggedIn = true
     req.session.user = userInfo
-    res.send("User authenticated: " + userInfo.name);
+    // res.send("User authenticated: " + userInfo.name);
+    res.redirect("http://localhost:3000/")
   } catch (error) {
     console.error("Error exchanging code for token:", error);
     res.status(500).send("Error occurred");

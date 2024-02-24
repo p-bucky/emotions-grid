@@ -6,7 +6,7 @@ async function setupSession(app) {
   const pg = (await import("pg")).default;
   const PostgresStore = new StoreCreator(session);
   const pool = new pg.Pool({
-    connectionString: process.env.SESSION_STORE_POSTGRES,
+    connectionString: process.env.POSTGRES_CONNECTION_STRING,
     max: 3,
     connectionTimeoutMillis: 30000,
   });

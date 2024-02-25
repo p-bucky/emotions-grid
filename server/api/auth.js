@@ -1,5 +1,7 @@
 const axios = require("axios");
 const userService = require("../services/user");
+const fs = require("node:fs");
+const path = require("node:path");
 
 const OAUTH_GOOGLE_CALLBACK = process.env.OAUTH_CALLBACK_URL.replace(
   "{{REDIRECT_BASE_URL}}",
@@ -42,7 +44,12 @@ const googleOauthCallback = async (req, res) => {
     req.session.isLoggedIn = true
     req.session.user = userInfo
     // res.send("User authenticated: " + userInfo.name);
-    res.redirect("http://localhost:3000/")
+    fs.readFile(path.resolve(__dirname, "../templates/login-redirect.html"), (err, data) => {
+      res.setHeader("Content-Type", "text/html");
+      res.send(data)
+      res.end()
+  });
+
   } catch (error) {
     console.error("Error exchanging code for token:", error);
     res.status(500).send("Error occurred");

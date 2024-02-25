@@ -1,5 +1,6 @@
 const axios = require("axios");
 const userService = require("../services/user");
+const jwt = require("jsonwebtoken");
 const fs = require("node:fs");
 const path = require("node:path");
 
@@ -7,6 +8,7 @@ const OAUTH_GOOGLE_CALLBACK = process.env.OAUTH_CALLBACK_URL.replace(
   "{{REDIRECT_BASE_URL}}",
   process.env.REDIRECT_BASE_URL
 );
+
 const initiateGoogleOauth = (req, res) => {
   const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${process.env.OAUTH_GOOGLE_CLIENT_ID}&redirect_uri=${OAUTH_GOOGLE_CALLBACK}&response_type=code&scope=https://www.googleapis.com/auth/userinfo.profile`;
 
@@ -40,15 +42,22 @@ const googleOauthCallback = async (req, res) => {
     });
     const userInfo = userInfoResponse.data;
 
-    await userService.createUser(userInfo.sub, userInfo.given_name, userInfo.family_name)
-    req.session.isLoggedIn = true
-    req.session.user = userInfo
-    // res.send("User authenticated: " + userInfo.name);
+    const jwtToken = jwt.sign({ userId: userInfo.sub }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+    await userService.createUser(userInfo.sub, userInfo.given_name, userInfo.family_name);
+
+    req.session.isLoggedIn = true;
+    req.session.user = userInfo;
+
     fs.readFile(path.resolve(__dirname, "../templates/login-redirect.html"), (err, data) => {
+      const buffer = Buffer.from(data, 'utf-8');
+      let stringFromBuffer = buffer.toString('utf-8');
+      stringFromBuffer = stringFromBuffer.replace('jwt', jwtToken)
+
       res.setHeader("Content-Type", "text/html");
-      res.send(data)
-      res.end()
-  });
+      res.send(stringFromBuffer);
+      res.end();
+    });
 
   } catch (error) {
     console.error("Error exchanging code for token:", error);

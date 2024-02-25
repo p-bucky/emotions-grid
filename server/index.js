@@ -5,15 +5,18 @@ const setupSession = require("./session");
 const compression = require("compression");
 const serveStatic = require("serve-static");
 const path = require("path");
-
+const cors = require("cors");
+const bodyParser = require('body-parser');
 const port = process.env.PORT;
 
 const SOURCE_PATH = path.resolve(__dirname, "../client/");
 const STATIC_BUILD_PATH_CLIENT = path.join(SOURCE_PATH, "out");
 
-console.log(STATIC_BUILD_PATH_CLIENT);
 (async () => {
   const app = express();
+  app.use(bodyParser.json());
+  app.use(bodyParser.urlencoded({ extended: true }));
+  app.use(cors());
 
   app.use(compression());
   app.use(
